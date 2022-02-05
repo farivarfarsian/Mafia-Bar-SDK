@@ -1,5 +1,5 @@
 # Window Console
-The Window Console is a Class which gives you the opportunity to create your a console in WIN32 Apps
+The Window Console is a Class which gives you the opportunity to create a console in WIN32 Apps
 It also supports the WIN32 Consoles.
 #### The future thoughts
 - Adding wide string support
