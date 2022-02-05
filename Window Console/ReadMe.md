@@ -5,5 +5,5 @@ It also supports the WIN32 Consoles.
 - Adding wide string support
 Here is an full example of How to use Window Console: 
 
-#### Here's an example of How to use Window Console: https://github.com/MafiaBar/Mafia-Bar-SDK/blob/master/Window%20Console/main.cpp
+#### Here's an example of How to use Window Console: [main.cpp](https://github.com/MafiaBar/Mafia-Bar-SDK/blob/master/Window%20Console/main.cpp)
 ### for further informations take a look at the [Documentation](https://mafia-bar.gitbook.io/mafia-bar-sdk/window-console)
