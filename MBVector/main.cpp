@@ -5,7 +5,9 @@
 */
 #include "Vector.h"
 #include <iostream>
+#include <vector>
 using namespace MafiaBar::SDK;
+
 struct Vector3
 {
 	float x = 0.0f, y = 0.0f, z = 0.0f;
@@ -37,13 +39,6 @@ struct Vector3
 		delete[] m_Meory_Block;
 	}
 	Vector3& operator=(const Vector3& other) = delete;
-	/*{
-		std::cout << "Copy\n";
-		x = other.x;
-		y = other.y;
-		z = other.z;
-		return *this;
-	}*/
 	Vector3& operator=(Vector3&& other)
 	{
 		m_Meory_Block = other.m_Meory_Block;
@@ -71,50 +66,9 @@ void PrintVector(const Vector<Vector3>& Value)
 		std::cout << Value[i].x << ", " << Value[i].y << ", " << Value[i].z << std::endl;
 	}
 }
-int main(void)
+
+int main()
 {
-	Vector<int> why;
-	why.PushBack(1);
-	why.PushBack(2);
-	std::cout << why.GetSize() << std::endl;
-	PrintVector(why);
-	why.Resize(5);
-	std::cout << why.GetSize() << std::endl;
-	PrintVector(why);
-	auto address = why.GetData();
-	getchar();
-	{
-		Vector<Vector3> vector;
-		vector.PushBack(Vector3(1.0f));
-		vector.PushBack(Vector3(2, 3 , 4));
-		vector.PushBack(Vector3());
-		vector.EmplaceBack(1.0f);
-		vector.EmplaceBack(2, 3, 4);
-		vector.EmplaceBack(1, 5, 4);
-		vector.EmplaceBack();
-		PrintVector(vector);
-		vector.PopBack();
-		vector.PopBack();
-		PrintVector(vector);
-		vector.EmplaceBack(5, 2, 0);
-		vector.EmplaceBack(1, 7, 9);
-		PrintVector(vector);
-		vector.Clear();
-		PrintVector(vector);
-		vector.EmplaceBack(5, 2, 0);
-		vector.EmplaceBack(1, 7, 9);
-		PrintVector(vector);
-	}
-	
-	Vector<int> indicies =
-	{
-		0,2,1, 2,3,1,
-		1,3,5, 3,7,5,
-		2,6,3, 3,6,7,
-		4,5,7, 4,7,6,
-		0,4,2, 2,4,6,
-		0,1,4, 1,5,4
-	};
-	PrintVector(indicies);
-	std::cout << indicies.GetSize();
+	//Adding Examples Soon!
+	system("pause>nul");
 }
