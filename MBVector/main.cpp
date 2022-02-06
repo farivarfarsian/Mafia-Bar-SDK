@@ -5,7 +5,7 @@
 */
 #include "Vector.h"
 #include <iostream>
-#include <vector>
+
 using namespace MafiaBar::SDK;
 
 struct Vector3
