@@ -1,8 +1,5 @@
 #pragma once
-#include <utility>
-#if defined  _DEBUG || defined _CRT_SECURE_NO_WARNINGS_DEBUG
-#include <cassert> //Assertion
-#endif //_DEBUG || _CRT_SECURE_NO_WARNINGS_DEBUG
+#include <utility> // std::move, std::initializer_list, size_t
 
 namespace MafiaBar
 {
@@ -11,13 +8,28 @@ namespace MafiaBar
 		template<class TV>
 		class Vector
 		{
+			#ifdef _MSC_VER
+				#if _MSVC_LANG < 201402L
+					#error "For using Mafia Bar Vector you need at least C++14"
+				#endif // _MSVC_LANG < 201402L
+			#else __cplusplus < 201402L
+				#error "For using Mafia Bar Vector you need at least C++14"
+			#endif //_MSC_VER
 		public:
 			Vector() { ReAlloc(2); }
-			template <typename... Types>
-			Vector(Types&&... argv)
+			explicit Vector(size_t Alloc) { ReAlloc(Alloc); }
+			#if 0
+				template <typename... Types>
+				Vector(Types&&... argv)
+				{
+					ReAlloc(sizeof...(Types));
+					([&](auto& input) { PushBack(input); } (argv), ...);
+				}
+			#endif
+			Vector(std::initializer_list<TV> argv)
 			{
-				ReAlloc(sizeof...(Types));
-				([&](auto& input) { PushBack(input); } (argv), ...);
+				ReAlloc(argv.size());
+				for (auto element : argv) { PushBack(element); }
 			}
 			~Vector()
 			{
@@ -97,21 +109,21 @@ namespace MafiaBar
 			constexpr TV& Front() const 
 			{
 				#if defined  _DEBUG || defined _CRT_SECURE_NO_WARNINGS_DEBUG
-					assert(mb_Size != 0);
-					return mb_Data[0];
-				#else
 					if (mb_Size != 0) { return mb_Data[0]; }
 					else { throw "you're trying to access to an uninitialized memory"; }
+				#else
+					if (mb_Size != 0) { return mb_Data[0]; }
+					else { std::abort(); }
 				#endif //_DEBUG || _CRT_SECURE_NO_WARNINGS_DEBUG
 			}
 			constexpr TV& Back() const 
 			{
 				#if defined  _DEBUG || defined _CRT_SECURE_NO_WARNINGS_DEBUG
-					assert(mb_Size != 0);
-					return mb_Data[mb_Size - 1];
-				#else
 					if (mb_Size != 0) { return mb_Data[mb_Size - 1]; }
 					else { throw "you're trying to access to an uninitialized memory"; }
+				#else
+					if (mb_Size != 0) { return mb_Data[mb_Size - 1]; }
+					else { std::abort(); }
 				#endif //_DEBUG || _CRT_SECURE_NO_WARNINGS_DEBUG
 			}
 		public:
