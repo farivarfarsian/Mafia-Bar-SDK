@@ -1,5 +1,8 @@
 #pragma once
 #include <utility> // std::move, std::initializer_list, size_t
+#include <yvals.h> // Debug Macro(_CONTAINER_DEBUG_LEVEL), _STL_VERIFY
+
+#define MB_VECTOR_VER 1.0f
 
 namespace MafiaBar
 {
@@ -9,68 +12,92 @@ namespace MafiaBar
 		class Vector
 		{
 			#ifdef _MSC_VER
+				static_assert(_MSC_VER > 1910, "You're MSVC compiler is old, please use Visual Studio 2017 or upper");
 				#if _MSVC_LANG < 201402L
 					#error "For using Mafia Bar Vector you need at least C++14"
 				#endif // _MSVC_LANG < 201402L
 			#else __cplusplus < 201402L
 				#error "For using Mafia Bar Vector you need at least C++14"
 			#endif //_MSC_VER
+			#pragma region Description about some Vector Functions
+			/*
+			* Why (mb_Capacity + mb_Capacity / 2) ?
+			* because we want to allocate enough room for the two values that the user is gonna push in the future after those two values are pushed from the use,
+			* we allocate another two blocks of memory for another two values that the user is gonna push. the algorithm of the pushing back and allocating memory goes like that.
+
+			* Why Vector() { ReAlloc(2); }
+			* because just like the algorithm explained up there, our memory allocating algorithm is like this:
+			* first of all we allocate enough memory for 2 values (std::vector allocates enough memory for 4 values)
+			* then we'll wait until use push back those two elements that we've allocated
+			* after that we'll check if the size of the vector is equal or greater than our capacity if it was true
+			* we will allocate enough memory for 2 values again and so on.
+
+			* In the initializer_list version of the Vector constructor 
+			* we don't use that two by two memory allocating algorithm anymore
+			* first we just allocate enough memory to push all of those variables to memory
+			* then if user push another value from that same vector, that two by two algorithm comes.
+			
+			* Why new(&newBlock[i]) TV(std::move(mb_Data[i])); instead of newBlock[i] = std::move(mb_Data[i]);
+			* The answer is when we do " TV* newBlock = static_cast<TV*>(::operator new(newCapacity * sizeof(TV))); ", we don't actually call the constructor of the data type so in some 
+			* cases it could throw an exception about "read access violation". so what we do is that we just pass our data type address and call its constructor without allocating any memory again to fix everything and then
+			* move the Data to that new block and done!
+			*/
+			#pragma endregion
+			#if 0 //retired constructor ( Vector(std::initializer_list<TV> argv) replaced it )
+			template <typename... Types>
+			Vector(Types&&... argv)
+			{
+				ReAlloc(sizeof...(Types));
+				([&](auto& input) { PushBack(input); } (argv), ...);
+			}
+			#endif // 0
 		public:
-			Vector() { ReAlloc(2); }
-			explicit Vector(size_t Alloc) { ReAlloc(Alloc); }
-			#if 0
-				template <typename... Types>
-				Vector(Types&&... argv)
-				{
-					ReAlloc(sizeof...(Types));
-					([&](auto& input) { PushBack(input); } (argv), ...);
-				}
-			#endif
-			Vector(std::initializer_list<TV> argv)
+			constexpr Vector() noexcept { ReAlloc(2); }
+			constexpr explicit Vector(size_t Alloc) { ReAlloc(Alloc); }
+			constexpr __stdcall Vector(std::initializer_list<TV> argv)
 			{
 				ReAlloc(argv.size());
 				for (auto element : argv) { PushBack(element); }
 			}
-			~Vector()
+			constexpr ~Vector() noexcept
 			{
 				Clear();
 				::operator delete(mb_Data, mb_Capacity * sizeof(TV));
 			}
-			void Resize(size_t newCapacity)
+			constexpr void Resize(size_t newSize)
 			{
-				TV* newBlock = (TV*)::operator new(newCapacity * sizeof(TV));
+				TV* newBlock = (TV*)::operator new(newSize * sizeof(TV));
 
-				if (newCapacity < mb_Size) { mb_Size = newCapacity; }
+				if (newSize < mb_Size) { mb_Size = newSize; }
 
-				for (size_t i = 0; i < mb_Size; i++) { newBlock[i] = std::move(mb_Data[i]); }
+				for (size_t i = 0; i < mb_Size; i++) { new(&newBlock[i]) TV(std::move(mb_Data[i])); }
 
-				for (size_t i = mb_Size; i < newCapacity; i++) { newBlock[i] = 0; }
+				for (size_t i = mb_Size; i < newSize; i++) { new(&newBlock[i]) TV(); }
 
 				for (size_t i = 0; i < mb_Size; i++) { mb_Data[i].~TV(); }
 
 				::operator delete(mb_Data, mb_Capacity * sizeof(TV)); 
 				mb_Data = newBlock; 
-				mb_Size = newCapacity;
-				mb_Capacity = newCapacity;
+				mb_Size = newSize;
 			}
-			void Clear()
+			constexpr void Clear() noexcept
 			{
 				for (size_t i = 0; i < mb_Size; i++) { mb_Data[i].~TV(); }
 				mb_Size = 0;
 			}
-			void PushBack(const TV& datap)
+			constexpr void PushBack(const TV& datap)
 			{
 				if (mb_Size >= mb_Capacity) { ReAlloc(mb_Capacity + mb_Capacity / 2); }
 				mb_Data[mb_Size] = datap;
 				mb_Size++;
 			}
-			void PushBack(TV&& datap)
+			constexpr void PushBack(TV&& datap)
 			{
 				if (mb_Size >= mb_Capacity) { ReAlloc(mb_Capacity + mb_Capacity / 2); }
 				mb_Data[mb_Size] = std::move(datap);
 				mb_Size++;
 			}
-			void PopBack()
+			constexpr void PopBack() noexcept
 			{
 				if (mb_Size > 0)
 				{
@@ -78,14 +105,14 @@ namespace MafiaBar
 					mb_Data[mb_Size].~TV();
 				}
 			}
-			void Reverse()
+			constexpr void Reverse()
 			{
 				TV* newReverse = (TV*)::operator new(mb_Size * sizeof(TV));
 
 				size_t IndexofReverse = 0;
 				for (size_t i = mb_Size; i-- != 0;)
 				{
-					newReverse[IndexofReverse] = std::move(mb_Data[i]);
+					new(&newReverse[IndexofReverse]) TV(std::move(mb_Data[i]));
 					IndexofReverse++;
 				}
 
@@ -94,7 +121,8 @@ namespace MafiaBar
 				::operator delete(mb_Data, mb_Capacity * sizeof(TV));
 				mb_Data = newReverse;
 			}
-			constexpr bool Empty() const
+			constexpr void ShrinkToFit() { if(mb_Capacity > mb_Size) { ReAlloc(mb_Size); } }
+			constexpr bool Empty() const 
 			{
 				if (mb_Size == 0) { return true; }
 				else { return false; }
@@ -106,53 +134,83 @@ namespace MafiaBar
 				new(&mb_Data[mb_Size]) TV(std::forward<argv>(args)...);
 				return mb_Data[mb_Size++];
 			}
-			constexpr TV& Front() const 
+			constexpr TV& Front() noexcept
 			{
-				#if defined  _DEBUG || defined _CRT_SECURE_NO_WARNINGS_DEBUG
-					if (mb_Size != 0) { return mb_Data[0]; }
-					else { throw "you're trying to access to an uninitialized memory"; }
+				#if _CONTAINER_DEBUG_LEVEL > 0
+					_STL_VERIFY(mb_Size != 0, "you're trying to access to an uninitialized memory (Empty Vector)");
 				#else
-					if (mb_Size != 0) { return mb_Data[0]; }
-					else { std::abort(); }
-				#endif //_DEBUG || _CRT_SECURE_NO_WARNINGS_DEBUG
+					if (mb_Size == 0) { std::abort(); }
+				#endif // _CONTAINER_DEBUG_LEVEL > 0
+				return mb_Data[0];
 			}
-			constexpr TV& Back() const 
+			constexpr const TV& Front() const noexcept
 			{
-				#if defined  _DEBUG || defined _CRT_SECURE_NO_WARNINGS_DEBUG
-					if (mb_Size != 0) { return mb_Data[mb_Size - 1]; }
-					else { throw "you're trying to access to an uninitialized memory"; }
+				#if _CONTAINER_DEBUG_LEVEL > 0
+					_STL_VERIFY(mb_Size != 0, "you're trying to access to an uninitialized memory (Empty Vector)");
 				#else
-					if (mb_Size != 0) { return mb_Data[mb_Size - 1]; }
-					else { std::abort(); }
-				#endif //_DEBUG || _CRT_SECURE_NO_WARNINGS_DEBUG
+					if (mb_Size == 0) { std::abort(); }
+				#endif // _CONTAINER_DEBUG_LEVEL > 0
+				return mb_Data[0];
+			}
+			constexpr TV& Back() noexcept
+			{
+				#if _CONTAINER_DEBUG_LEVEL > 0
+					_STL_VERIFY(mb_Size != 0, "you're trying to access to an uninitialized memory (Empty Vector)");
+				#else
+					if (mb_Size == 0) { std::abort(); }
+				#endif // _CONTAINER_DEBUG_LEVEL > 0
+				return mb_Data[mb_Size - 1];
+			}
+			constexpr const TV& Back() const noexcept
+			{
+				#if _CONTAINER_DEBUG_LEVEL > 0
+					_STL_VERIFY(mb_Size != 0, "you're trying to access to an uninitialized memory (Empty Vector)");
+				#else
+					if (mb_Size == 0) { std::abort(); }
+				#endif // _CONTAINER_DEBUG_LEVEL > 0
+				return mb_Data[mb_Size - 1];
 			}
 		public:
-			TV& operator[](size_t index) { return mb_Data[index]; }
-			constexpr TV& operator[](size_t index) const { return mb_Data[index]; }
+			constexpr TV& operator[](size_t index) noexcept
+			{
+				#if _CONTAINER_DEBUG_LEVEL > 0
+					_STL_VERIFY(index < mb_Size, "Wrong index: the index is out of the range of vector");
+				#else
+					if (index >= mb_Size) { std::abort(); }
+				#endif // _CONTAINER_DEBUG_LEVEL > 0
+				return mb_Data[index]; 
+			}
+			constexpr const TV& operator[](size_t index) const noexcept
+			{
+				#if _CONTAINER_DEBUG_LEVEL > 0
+					_STL_VERIFY(index < mb_Size, "Wrong index: the index is out of the range of vector");
+				#else
+					if (index >= mb_Size) { std::abort(); }
+				#endif // _CONTAINER_DEBUG_LEVEL > 0
+				return mb_Data[index];
+			}
 		public:
-			//Get the size of the vector
-			constexpr size_t GetSize() const { return mb_Size; }
-			//Get the capacity of the vector
-			constexpr size_t GetCapacity() const { return mb_Capacity; }
-			//Get vector Data
-			constexpr TV* GetData() const { return mb_Data; }
+			constexpr size_t GetSize() const noexcept { return mb_Size; }
+			constexpr size_t GetCapacity() const noexcept { return mb_Capacity; }
+			constexpr TV* GetData() noexcept { return mb_Data; }
+			constexpr const TV* GetData() const noexcept { return mb_Data; }
 		private:
 			TV* mb_Data = nullptr;
 			size_t mb_Size = 0;
 			size_t mb_Capacity = 0;
-			void ReAlloc(size_t newCapacity)
+			constexpr void ReAlloc(size_t newCapacity)
 			{
-				TV* newBlock = (TV*)::operator new(newCapacity * sizeof(TV));
+				TV* newBlock = static_cast<TV*>(::operator new(newCapacity * sizeof(TV)));
 
 				if (newCapacity < mb_Size) { mb_Size = newCapacity; }
 
-				for (size_t i = 0; i < mb_Size; i++) { newBlock[i] = std::move(mb_Data[i]); }
-
+				for (size_t i = 0; i < mb_Size; i++) { new(&newBlock[i]) TV(std::move(mb_Data[i])); }
+				
 				for (size_t i = 0; i < mb_Size; i++) { mb_Data[i].~TV(); }
 
-				::operator delete(mb_Data, mb_Capacity * sizeof(TV)); //Deleting Old Data From That Old Block of Memory
-				mb_Data = newBlock; //Copying Data 
-				mb_Capacity = newCapacity; //Keeping The Allocaed Memory Size Block 
+				::operator delete(mb_Data, mb_Capacity * sizeof(TV)); 
+				mb_Data = newBlock;
+				mb_Capacity = newCapacity;
 			}
 		};
 	}
