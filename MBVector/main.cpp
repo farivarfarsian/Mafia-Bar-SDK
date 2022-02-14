@@ -88,6 +88,15 @@ int main()
 	MafiaBar::SDK::Vector<float> floats;
 	if (floats.Empty() == true) { std::cout << "The vector is empty." << std::endl; }
 
+	
+	//Sample of using Iterator
+	const MafiaBar::SDK::Vector<unsigned> unsigneds = { 1,2,3, 4,5,6, 7,8,9, 10,11,12 };
+	std::cout << "Iterating with Range-based for loop\n";
+	for (auto value : unsigneds) { std::cout << value << std::endl; }
+	std::cout << "Iterating with ::Iterator\n";
+	for (MafiaBar::SDK::Vector<unsigned>::Iterator it = unsigneds.begin(); it != unsigneds.end(); it++) { std::cout << *it << std::endl; }
+
+
 	system("pause>nul"); //Waiting user to press any key
 	return 0;
 }

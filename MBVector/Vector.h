@@ -8,8 +8,37 @@ namespace MafiaBar
 {
 	namespace SDK
 	{
+		template<class VectorClass>
+		class VectorIterator final
+		{
+		public:
+			using ValueType = typename VectorClass::VectorType;
+			using ValuePtr = ValueType*;
+			using ValueRef = ValueType&;
+			using IteratorRef = VectorIterator&;
+		public:
+			VectorIterator(ValuePtr Ptr) : mb_Ptr(Ptr) {}
+			constexpr IteratorRef operator++() noexcept
+			{
+				mb_Ptr++;
+				return *this;
+			}
+			constexpr VectorIterator operator++(int) noexcept
+			{
+				VectorIterator _temp = *this;
+				++(*this);
+				return _temp;
+			}
+			constexpr ValueRef operator*() noexcept { return *mb_Ptr; }
+			constexpr ValuePtr operator->() noexcept { return mb_Ptr; }
+			constexpr bool operator==(const VectorIterator& Iterator) const noexcept { return mb_Ptr == Iterator.mb_Ptr; }
+			constexpr bool operator!=(const VectorIterator& Iterator) const noexcept { return !(*this == Iterator); }
+		private:
+			ValuePtr mb_Ptr;
+		};
+
 		template<class TV>
-		class Vector
+		class Vector final
 		{
 			#ifdef _MSC_VER
 				static_assert(_MSC_VER > 1910, "You're MSVC compiler is old, please use Visual Studio 2017 or upper");
@@ -51,6 +80,13 @@ namespace MafiaBar
 				([&](auto& input) { PushBack(input); } (argv), ...);
 			}
 			#endif // 0
+		public:
+			using VectorType = TV;
+			using Iterator = VectorIterator<Vector<TV>>;
+			constexpr Iterator begin() { return Iterator(&mb_Data[0]); }
+			constexpr Iterator end() { return Iterator(&mb_Data[mb_Size]); }
+			const constexpr Iterator begin() const { return Iterator(&mb_Data[0]); }
+			const constexpr Iterator end() const { return Iterator(&mb_Data[mb_Size]); }
 		public:
 			constexpr Vector() noexcept { ReAlloc(2); }
 			constexpr explicit Vector(size_t Alloc) { ReAlloc(Alloc); }
