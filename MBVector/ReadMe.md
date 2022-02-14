@@ -1,6 +1,6 @@
 # Mafia Bar SDK Vector
 Mafia Bar SDK Vector is a dynamic array that you can use to store any data types in it.
-Mafia Bar SDK already has everything that you need and it's well performanced.
+Mafia Bar SDK already has everything that you need and it's well performed.
 So have fun with it and If you can find any improvments or bugs please let us know.
 #### Note: Mafia Bar SDK Vector doesn't support G++ compiler.
 #### Future Improvements
