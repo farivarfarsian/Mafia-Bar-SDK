@@ -2,7 +2,7 @@
 #include <utility> // std::move, std::initializer_list, size_t
 #include <yvals.h> // Debug Macro(_CONTAINER_DEBUG_LEVEL), _STL_VERIFY
 
-#define MB_VECTOR_VER 1.0f
+#define MB_VECTOR_VER 1.2f
 
 namespace MafiaBar
 {
