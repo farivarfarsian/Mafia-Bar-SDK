@@ -1,6 +1,7 @@
 #pragma once
 #include <utility>
 #include <yvals.h>
+#include <malloc.h>
 
 namespace MafiaBar
 {
