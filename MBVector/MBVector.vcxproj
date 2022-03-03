@@ -146,6 +146,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="StackVector.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="VirtualVector.h" />
   </ItemGroup>
