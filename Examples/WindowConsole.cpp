@@ -3,7 +3,7 @@
 -----------------------main.cpp-----------------------
 --For Testing Console Class
 */
-#include "Console.h"
+#include "../Source/Console.h"
 
 HWND hwnd = NULL;
 const char* WndClassName = "WindowConsoleProgramTest";

@@ -3,7 +3,8 @@
 -----------------------main.cpp-----------------------
 --For Testing The Vector 
 */
-#include "Vector.h"
+#include "../Source/Vector.h"
+#include "../Source/StackVector.h"
 #include <iostream> // std::cout, std::endl, std::string
 
 struct Vertex
@@ -98,5 +99,17 @@ int main()
 
 
 	system("pause>nul"); //Waiting user to press any key
-	return 0;
+	//return 0;
+
+	MafiaBar::SDK::StackVector<int> intsssssss;
+	intsssssss.PushBack(1);
+	intsssssss.PushBack(2);
+	intsssssss.PushBack(3);
+	intsssssss.PushBack(4);
+	intsssssss.PushBack(5);
+	intsssssss.PushBack(6);
+	for (auto& ikntntn : intsssssss)
+	{
+		std::cout << ikntntn << std::endl;
+	}
 }
