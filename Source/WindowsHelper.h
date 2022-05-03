@@ -34,6 +34,7 @@ namespace MafiaBar
     {
         namespace WindowsHelper
         {
+            #undef IsMaximized
             const bool IsMaximized(WindowHandle Handle)
             {
                 WINDOWPLACEMENT placement = { 0 };
